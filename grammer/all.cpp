@@ -6,6 +6,7 @@
 #include<vector>
 #include<queue>
 #include<stack>
+#include<tuple>
 using namespace std;
 
 
@@ -166,7 +167,7 @@ int main(){
     cout << count(vec_11.begin(),vec_11.end(), 5) << endl; //2
 
     /*
-    sort(시작it, 끝it) //오름차순(작은것부터)
+    sort(시작it, 끝it) //오름차순(작은것부터) , 첫번째 요소가 같으면 두번째 . . .
     sort(시작it, 끝it, compare) // compare가 false일때 원소를 바꿈
     */
    /*
@@ -283,6 +284,26 @@ int main(){
     while(!pq.empty()){
         cout << "(" << pq.top().x << ", " << pq.top().y << ") ";// priority queue는 top으로 조회
         pq.pop();
+    }
+    cout << endl;
+
+    // 16. tuple과 priority_queue
+    cout << "======= 16 ========" << endl;
+
+    priority_queue<tuple<int,int,int>,vector<tuple<int,int,int>>,greater<tuple<int,int,int>>> pq2; 
+    // tuple은 greater로 오름차순 정렬 가능
+    // 앞에 값이 같으면 뒤에 값으로 순차 비교
+    
+    // 삽입
+    pq2.push({1,2,3}); // 이게 됨!! 
+    pq2.push({1,2,1});
+    pq2.push({2,1,1});
+
+    // 조회, 삭제
+    while(!pq2.empty()){
+        auto [a, b, c] = pq2.top(); // tuple은 구조분해할당 가능
+        cout << "(" << a << ", " << b << ", " << c << ") ";
+        pq2.pop();
     }
     cout << endl;
 }
