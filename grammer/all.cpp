@@ -121,6 +121,7 @@ int main(){
     v3.pop_back();
 
     v3.insert(v3.begin(), 1); // {1,3,3,3,3}
+    v3.insert(v3.begin()+1, 2); // {1,2,3,3,3,3}
     v3.erase(v3.begin()); // {3,3,3,3}
     
     // 9. set
@@ -220,11 +221,11 @@ int main(){
     }
     cout << endl; // 1 2 3 4 5 3 4 4 5 5 5 뒷부분은 그대로 남음. 의미없는 값이됨
 
-    //binary_search
+    // binary_search
     // 이미 정렬 되어있는 것에서만 쓸 수 있고 O(logN)
     // binary_search(시작it, 끝it, 찾을 수) -> 있으면 true 없으면 false
     
-    //max_element, min_element
+    // max_element, min_element
     // max_element(시작it, 끝it); -> max이곳의 it
 
     vector<int> vec_11_3 = {1,3,5,7,2,4,6};
@@ -232,8 +233,11 @@ int main(){
     auto maxIt = max_element(vec_11_3.begin(),vec_11_3.end());
     auto minIt = min_element(vec_11_3.begin(),vec_11_3.end());
 
-    cout << *maxIt << endl;
-    cout << *minIt << endl;
+    cout << *maxIt << endl; // 7
+    cout << *minIt << endl; // 1
+
+    //vector/deque/array → begin/end 가능
+    // queue/stack/priority_queue → begin/end 없음
 
     // 12. vector값은 변수로 선언해도 된다.
     int N;
@@ -295,7 +299,7 @@ int main(){
     // 앞에 값이 같으면 뒤에 값으로 순차 비교
     
     // 삽입
-    pq2.push({1,2,3}); // 이게 됨!! 
+    pq2.push({1,2,3}); // 됨
     pq2.push({1,2,1});
     pq2.push({2,1,1});
 
@@ -306,4 +310,50 @@ int main(){
         pq2.pop();
     }
     cout << endl;
+
+    // tuple 각 번호 조회
+    tuple<int,int,int> t = {1,2,3};
+    cout << get<0>(t) << endl; // 1
+
+    // 17. deque
+    cout << "======= 17 ========" << endl;
+    deque<int> deq;
+    deq.push_back(1);
+    deq.push_front(2);
+    deq.push_back(3);
+    for (const auto& e : deq){
+        cout << e << " ";
+    }
+    cout << endl;
+
+    deq.front(); //2
+    deq.back(); //3
+    deq.pop_back();
+    deq.pop_front();
+    for (const auto& e : deq){
+        cout << e << " ";
+    }
+    cout << endl;
+
+    // 18. container 복사하기
+    queue<int> que1 = que; // 표준 컨테이너 (vector, deque, list, queue, stack, priority_queue, set, map, unordered_set, unordered_map) 는 복사 가능
+
+    // 19. iterator로 index 구하기
+    vector<int> v = {1, 3, 5, 2};
+
+    maxIt = max_element(v.begin(), v.end());
+    auto idx = maxIt - v.begin();   // idx는 ptrdiff_t
+    cout << idx << endl;            // 2
+
+    // 20. pair
+    pair<int,int> pair_ = {1,2}; //초기화
+    cout << pair_.first << " " << pair_.second << endl;
+
+    vector<pair<int,int>> vp = {{1,2},{3,4},{5,6}};
+    vp.push_back({7,8}); // 이렇게 넣기 가능
+    for (const auto& [first, second] : vp){ // 구조 분해 가능
+        cout << first << " " << second << endl;
+    } 
+
+    // pair끼리 비교시 사전순으로 x가 같으면 y로 비교
 }
