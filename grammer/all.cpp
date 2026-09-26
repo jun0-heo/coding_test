@@ -346,6 +346,7 @@ int main(){
     cout << idx << endl;            // 2
 
     // 20. pair
+    cout << "======= 20 ========" << endl;
     pair<int,int> pair_ = {1,2}; //초기화
     cout << pair_.first << " " << pair_.second << endl;
 
@@ -356,4 +357,48 @@ int main(){
     } 
 
     // pair끼리 비교시 사전순으로 x가 같으면 y로 비교
+    // pair는 ==, !=, <, >, <=, >= 연산자 사용 가능
+    // 대부분의 표준 컨테이너가 원소가 비교 가능하면 비교가 가능
+
+    pair<int, int> p1 = {1, 2};
+    pair<int, int> p2 = {1, 3};
+
+    if (p1 < p2) {
+        cout << "p1이 더 작음";
+    }
+
+    // 덧셈은 안됨.
+    pair<int,int> sum = {p1.first + p2.first, p1.second + p2.second};
+
+    cout << sum.first << " " << sum.second << endl;
+
+    // maximum_element(vector<pair<int,int>)) 도 가능하다
+    vector<pair<int,int>> pairs = {p1,p2};
+    max_element(pairs.begin(), pairs.end());
+
+    // 21. 다차원 vector 초기화
+    cout << "======= 21 ========" << endl;
+    int rows = 3;
+    int columns = 4;
+    int depth = 5;
+    vector<vector<int>> vec21(rows, vector<int>(columns));
+
+    // 안쪽부터 중첩해서 쌓으면 된다. 
+    //depth x rows x columns
+    vector<vector<vector<int>>> vec21_1(
+        depth,
+        vector<vector<int>>(rows, vector<int>(columns))
+     );
+
+    // 4차원: layers x depth x rows x columns
+    int layers = 5;
+
+    vector<vector<vector<vector<int>>>> vec21_2(
+        layers,
+        vector<vector<vector<int>>>(
+            depth,
+            vector<vector<int>>(rows, vector<int>(columns, 0)) //0은 초깃값
+        )
+    );
+
 }
