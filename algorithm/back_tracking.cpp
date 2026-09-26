@@ -17,14 +17,37 @@ void print(vector<vector<int>> vec){
     cout << "]" << endl;
 }
 
+vector<vector<int>> solutions;
+vector<int> tracks;
+
+void backtrack(int N, int sum_, int start){
+    if(sum_ == 10) {
+        solutions.push_back(tracks);
+        return;
+    }
+
+    for(int i = start; i <= N; i++){
+        if(sum_ + i <= 10){
+            tracks.push_back(i);
+            backtrack(N, sum_+i, i+1);
+            tracks.pop_back();
+        }
+    }
+}
+
+
 vector<vector<int>> solution(int N) {
     for(int j=0; j<solutions.size(); j++){
         solutions[j].clear();
     }
     solutions.clear();
+    backtrack(N, 0, 1);
+    return solutions;
 }
 
 int main() {
+    print(solution(5));
+    print(solution(2));
     print(solution(7));
     return 0;
 }
