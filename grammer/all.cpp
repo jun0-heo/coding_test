@@ -415,4 +415,12 @@ int main(){
     }
     cout << endl;
 
+    // 2차원 이상에서도 assign 초기화 할때랑 마찬가지로 가능하다.
+    vector<vector<bool>> v22_2;
+    v22_2.assign(rows, vector<bool>(columns,false));
+
+    vector<vector<vector<int>> v22_3;
+    v22_3.assign(2, vector<vector<int>>(3, vector<int>(4, 0))); // 2x3x4
+
+
 }
