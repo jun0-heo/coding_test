@@ -401,4 +401,18 @@ int main(){
         )
     );
 
+    // 22. vector의 할당과 초기화
+    cout << "======= 22 ========" << endl;
+    // vector를 그냥 선언했다가 크기를 알았을 때
+    vector<int> v22;
+    v22.resize(5);
+
+    // vector를 그냥 선언했다가 크기를 알고 같은값으로 초기화 하려할때
+    vector<bool> v22_1;
+    v22_1.assign(5, false);
+    for(auto value: v22_1){
+        cout << value << " ";
+    }
+    cout << endl;
+
 }
