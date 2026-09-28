@@ -454,4 +454,7 @@ int main(){
     string s4(1, tmp);
     cout << s4 << endl;
 
+    // 24.min, max 사용법
+    min({1,2,3}); //min은 여러개를 중괄호로 묶으면 사용할 수 있다.
+
 }
