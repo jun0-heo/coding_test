@@ -419,8 +419,39 @@ int main(){
     vector<vector<bool>> v22_2;
     v22_2.assign(rows, vector<bool>(columns,false));
 
-    vector<vector<vector<int>> v22_3;
+    vector<vector<vector<int>>> v22_3;
     v22_3.assign(2, vector<vector<int>>(3, vector<int>(4, 0))); // 2x3x4
 
+    // 23. string
+    cout << "======= 22 ========" << endl;
+    // string 초기화
+    string s;
+    string s2(2,'c'); // "cc"
+    string c3 = "string";
+
+    // 자주 쓰는 것들
+    s2.size();
+    s2.empty();
+
+    s2[0];
+    s2.at(0); // 범위 체크 포함. 범위에 없으면 예외를 던짐. 예외 잡는 부분이 없으면 강제종료
+    s2.front();
+    s2.back();
+
+    s += " world"; //빈 문자열에 + 연산 가능
+    s.append("!"); //string 만
+    s.push_back('?'); //char만
+
+    s.substr(0,3); // 0부터 3글자
+    s.find("or"); //"or"가 시작되는 위치 반환 (없으면 string::npos); bool로 따지면 true이기 때문에 직접 비교해야한다.
+
+    cout << s << endl;
+
+    s.clear();
+
+    // char을 string으로 변환하는법
+    char tmp = 'c';
+    string s4(1, tmp);
+    cout << s4 << endl;
 
 }
