@@ -423,7 +423,7 @@ int main(){
     v22_3.assign(2, vector<vector<int>>(3, vector<int>(4, 0))); // 2x3x4
 
     // 23. string
-    cout << "======= 22 ========" << endl;
+    cout << "======= 23 ========" << endl;
     // string 초기화
     string s;
     string s2(2,'c'); // "cc"
@@ -433,7 +433,7 @@ int main(){
     s2.size();
     s2.empty();
 
-    s2[0];
+    s2[0]; //char
     s2.at(0); // 범위 체크 포함. 범위에 없으면 예외를 던짐. 예외 잡는 부분이 없으면 강제종료
     s2.front();
     s2.back();
@@ -454,7 +454,43 @@ int main(){
     string s4(1, tmp);
     cout << s4 << endl;
 
+    string str23 = "hello";
+    char character = str23[-1];
+    str23.pop_back();
+    str23 += character;
+    str23.erase(0,1); // 0번째 index부터 길이 1을 지운다
+
+    cout << str23 << endl;
+
     // 24.min, max 사용법
+    cout << "======= 24 ========" << endl;
     min({1,2,3}); //min은 여러개를 중괄호로 묶으면 사용할 수 있다.
+
+    // 25. string compare
+    cout << "======= 25 ========" << endl;
+    string s25 = "banana";
+    string s25_1 = "nana";
+
+    // 1. 전체 vs 전체
+    // a.compare(b);
+
+    // 2. a의 [pos, pos+len) 구간 vs b 전체
+    // a.compare(pos, len, b);
+
+    // 3. a의 구간 vs b의 구간
+    // a.compare(pos1, len1, b, pos2, len2);
+
+    cout << s25.compare(2,4, s25_1) << endl;
+    cout << s25.compare(2,3, s25_1, 0,3) << endl;
+
+    //26. 대문자와 소문자
+    vector<char> char_vec= {'0', 'a','z','A','Z'}; // 48, 97, 122, 65, 90
+    
+    for(char& c : char_vec){
+        cout << c << ": " << c - '0' << endl; // 이 경우 c - '0' 은 signed int
+    }
+
+    cout << 'A' + 32 << endl;
+
 
 }
