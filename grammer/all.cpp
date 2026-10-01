@@ -7,6 +7,9 @@
 #include<queue>
 #include<stack>
 #include<tuple>
+#include<cmath>    // fmod
+#include<cstdlib>  // div
+#include<unordered_map> // unordered_map 순서 보장 없음 예제
 using namespace std;
 
 
@@ -492,5 +495,181 @@ int main(){
 
     cout << 'A' + 32 << endl;
 
+    // 27. string find (범위 지정)
+    cout << "======= 27 ========" << endl;
+    string s27 = "aXbXcXd"; // X는 index 1,3,5
+    // find(무엇, pos): pos부터 "끝까지" 검색. 시작점 제한 O, 끝 제한 X
+    size_t pos27 = s27.find('X', 3); //3
+    cout << pos27 << endl;
+    // rfind(무엇, pos): pos 이하 구간을 "뒤에서부터". 반환은 항상 앞쪽 index
+    cout << s27.rfind('X', 4) << endl; //3
+
+    /*
+    임의의 [lo, hi) 구간을 한 번에 지정하는 string::find 는 없다.
+    시작점은 pos 로, 끝은 반환값을 hi와 비교해서 만든다. (npos 체크 먼저!)
+    */
+    size_t lo = 4, hi = 6;
+    size_t hit = s27.find('X', lo);
+    if (hit != string::npos && hit < hi) { // hit < hi 만 쓰면 p+1 오버플로 위험
+        cout << "range hit at " << hit << endl; //5
+    }
+    // 진짜 구간 제한: std::search(반복자) 또는 substr 로 잘라서 find
+    string needle27 = "X"; // 같은 객체의 begin/end 여야 함 (임시 두 개를 섞으면 UB)
+    auto it27 = search(s27.begin()+lo, s27.begin()+hi, needle27.begin(), needle27.end());
+    if (it27 != s27.begin()+hi) cout << "search at " << (it27 - s27.begin()) << endl; //5
+
+    /*
+    find 반환 타입은 size_t(unsigned, string::size_type). 없으면 string::npos.
+    npos = (size_t)-1 = 18446744073709551615. int에 담지 말 것.
+    unsigned라서 pos >= 0 은 항상 참이라 무의미.
+    */
+    static_assert(is_same_v<decltype(s27.find('X')), size_t>);
+    cout << s27.find("ZZZ") << endl; // 그냥 찍으면 거대한 값, !=string::npos 로 비교해야
+
+    // _of 계열은 문자 하나하나의 "집합"을 찾는다. "lo" 문자열 찾기가 아니다
+    cout << s27.find_first_of("Xb") << endl; //1 ('X' 또는 'b')
+    cout << s27.find_first_not_of("aX") << endl; //3
+
+    // 모든 위치 순회: 찾은 위치 그대로 다시 넘기면 제자리라 pos++ 필수
+    string s27b = "a.b.c.d";
+    size_t pos27b = 0;
+    while ((pos27b = s27b.find('.', pos27b)) != string::npos) {
+        cout << pos27b << " "; // 1 3 5
+        pos27b++;
+    }
+    cout << endl;
+
+    /*
+    함정: string::find 는 size_t + npos, std::find(algorithm) 는 iterator + end().
+    두 개를 섞으면 npos 대신 end()를 비교하는 실수가 난다.
+    */
+    vector<int> v27 = {1,2,3};
+    auto fit27 = find(v27.begin(), v27.end(), 5);
+    if (fit27 == v27.end()) cout << "std::find not found -> end()" << endl;
+
+    // 28. for문 여러 칸 건너뛰기
+    cout << "======= 28 ========" << endl;
+    // 세번째 자리는 "매 반복 후 실행"이라 i = i + 2 도 되지만 관용적으론 i += 2
+    for (int i = 0; i < 10; i += 2) cout << i << " "; // 0 2 4 6 8
+    cout << endl;
+    for (int i = 10; i > 0; i -= 2) cout << i << " "; // 10 8 6 4 2
+    cout << endl;
+
+    // 2개씩 짝지어 순회: 마지막 원소 누락 주의 -> i + 1 < size
+    vector<int> v28 = {1,2,3,4,5,6};
+    for (size_t i = 0; i + 1 < v28.size(); i += 2)
+        cout << "(" << v28[i] << "," << v28[i+1] << ") "; // (1,2) (3,4) (5,6)
+    cout << endl;
+
+    /*
+    함정: size_t는 unsigned라 i >= 0 이 항상 참 -> 역순으로 -= 하면 무한루프.
+    역순은 int로 받고 (int)v.size()-1 에서 시작.
+    */
+    for (int i = (int)v28.size()-1; i >= 0; i -= 2) cout << v28[i] << " "; // 6 4 2
+    cout << endl;
+
+    // 29. 나누기와 나머지(%)
+    cout << "======= 29 ========" << endl;
+    cout << 7 % 3 << endl;    // 1
+    /*
+    % 결과 부호는 "왼쪽 피연산자(피제수)"를 따른다. 수학적 modulo와 다르다.
+      -7 % 3  == -1   (파이썬은 2)
+       7 % -3 ==  1
+    */
+    cout << -7 % 3 << endl;   // -1
+
+    // 음수도 항상 0 이상인 나머지가 필요할 때(코테 단골)
+    auto mod = [](int x, int m){ return ((x % m) + m) % m; };
+    cout << mod(-7, 3) << endl; // 2
+
+    // % 는 정수 전용. 실수는 fmod
+    cout << fmod(7.5, 2.0) << endl; // 1.5
+
+    // 몫과 나머지를 한번에
+    div_t d29 = div(7, 3);
+    cout << d29.quot << " " << d29.rem << endl; // 2 1
+
+    // 홀수 판정은 n % 2 != 0 (n % 2 == 1 은 음수 홀수에서 false: -3 % 2 == -1)
+    // x / 0, x % 0 은 UB(크래시). 나누기 전 0 체크.
+    // 큰 수 모듈러는 오버플로 주의: 100000 * 100000 % 7 은 틀린 값(3), long long 으로.
+    cout << 100000LL * 100000 % 7 << endl; // 1
+
+    // 30. map 순회 순서
+    cout << "======= 30 ========" << endl;
+    map<string,int> map_30;
+    map_30["banana"] = 2; map_30["apple"] = 1; map_30["cherry"] = 3; // 일부러 뒤죽박죽 삽입
+    // map은 레드-블랙 트리라 "비교자가 정한 순서"를 유지. begin()이 가장 작은 키.
+    for (auto [k, val] : map_30) cout << k << " "; // apple banana cherry (삽입순서 아님)
+    cout << endl;
+
+    // 비교자를 바꾸면 순서도 바뀐다 -> "무조건 오름차순"이 아니라 비교자 순서
+    map<int,string, greater<int>> map_30g;
+    map_30g[1] = "a"; map_30g[10] = "b"; map_30g[5] = "c";
+    for (auto [k, val] : map_30g) cout << k << " "; // 10 5 1 (내림차순)
+    cout << endl;
+
+    // unordered_map 은 해시 기반이라 순서를 보장하지 않음
+    unordered_map<int,int> umap_30;
+    umap_30[7] = 1; umap_30[1] = 2; umap_30[4] = 3;
+    cout << umap_30.size() << endl; // 순서는 구현마다 다름(정렬 순회 X)
+
+    // 구조분해 바인딩도 auto 로 받으면 매 반복 복사한다. 읽기만 하면 const auto&
+    for (const auto& [k, val] : map_30) { (void)k; (void)val; } // 복사 없이 순회
+
+    // 31. vector erase / pop_back
+    cout << "======= 31 ========" << endl;
+    vector<int> v31 = {1,2,3,4,5};
+    v31.pop_back(); // {1,2,3,4}  맨 뒤 삭제, O(1). 반환은 void (지운 값 안 돌려줌)
+
+    // 값이 필요하면 먼저 조회: int last = v31.back(); v31.pop_back();
+    int last31 = v31.back();
+    v31.pop_back();
+    cout << last31 << endl; // 3
+
+    /*
+    erase 는 위치를 "iterator" 로 받는다. 인덱스로는 못 지운다.
+    v31.erase(2);            // ❌ 컴파일 에러
+    v31.erase(v31.begin()+2) // ✅ 인덱스 2
+    (map/set 의 erase 만 키로도 지울 수 있다)
+    */
+    v31.erase(v31.begin()); // 맨 앞 삭제, O(N) (뒤 원소를 전부 당김)
+
+    // 범위 삭제는 [first, last) 반열림
+    vector<int> v31b = {1,2,3,4,5};
+    v31b.erase(v31b.begin()+1, v31b.begin()+3); // {1,4,5}
+
+    // 전체 삭제
+    vector<int> v31c = {1,2,3};
+    v31c.clear();
+
+    // erase 는 지운 자리의 "다음" iterator를 반환한다 -> 반복 중 삭제 시 이걸로 갱신
+    vector<int> v31d = {1,2,3,4,3};
+    for (auto it = v31d.begin(); it != v31d.end(); ) {
+        if (*it == 3) it = v31d.erase(it); // 안 받고 ++it 하면 무효 iterator(UB)
+        else ++it;
+    }
+    cout << v31d.size() << endl; // 3
+
+    /*
+    std::remove 는 "지우지 않는다". 값을 뒤로 밀고 새 끝 iterator만 반환.
+    실제 삭제는 erase 와 반드시 세트로 (erase-remove 관용구).
+    std::remove_if 로 조건 삭제.
+    */
+    vector<int> v31e = {1,2,2,3,2,4};
+    v31e.erase(remove(v31e.begin(), v31e.end(), 2), v31e.end()); // {1,3,4}
+    // C++20 이면 std::erase(v31e, 2) 한 줄
+
+    // 맨 앞 삭제가 잦으면 vector 대신 deque (pop_front O(1))
+    deque<int> dq31 = {1,2,3};
+    dq31.pop_front();
+
+    // 32. pop_back / erase 요약
+    cout << "======= 32 ========" << endl;
+    vector<int> v32 = {1,2,3};
+    v32.push_back(4);              // 맨 뒤 추가 O(1)
+    v32.pop_back();                // 맨 뒤 삭제 O(1), void
+    v32.erase(v32.begin() + 1);    // 특정 위치(iterator) 삭제 O(N)
+    v32.clear();                   // 전체 삭제
+    // erase(begin()) / 중간 삭제는 O(N), pop_back 만 O(1). back()-pop_back() 순서로 값 보존.
 
 }

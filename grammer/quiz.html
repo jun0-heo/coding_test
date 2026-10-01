@@ -79,6 +79,28 @@
     font-size: 13px; line-height: 1.5;
   }
   .answer .note { font-size: 13px; color: #555; margin-top: 8px; }
+  /* 객관식 선택지 */
+  .choices { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 8px; }
+  .choice {
+    display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px;
+    border: 1px solid #ddd; border-radius: 6px; background: #fafafa;
+    cursor: pointer; font-size: 14px; transition: background .12s, border-color .12s;
+  }
+  .choice:hover { background: #f0f4ff; }
+  .choice input { margin-top: 3px; flex: 0 0 auto; }
+  .choice code {
+    background: #f0f0f3; padding: 1px 6px; border-radius: 4px;
+    font-family: "SF Mono", Consolas, monospace; font-size: 13px;
+  }
+  /* 채점 결과 색 */
+  .choice.correct { background: #f0fdf4; border-color: #22c55e; }
+  .choice.wrong   { background: #fef2f2; border-color: #ef4444; }
+  .choice .mark { margin-left: auto; font-weight: bold; }
+  .choice.correct .mark { color: #16a34a; }
+  .choice.wrong   .mark { color: #ef4444; }
+  .verdict { font-size: 13px; font-weight: bold; margin-top: 6px; }
+  .verdict.ok  { color: #16a34a; }
+  .verdict.bad { color: #ef4444; }
 </style>
 </head>
 <body>
@@ -140,6 +162,64 @@ const questions = [
     a: `size_t pos = s.find("na");  // 2
 // 없으면 string::npos 반환`,
     note: "bool로 쓰면 안 됨. pos != string::npos 로 비교."
+  },
+  {
+    tag: "find 반환 타입",
+    q: "<code>s.find('a')</code> 의 반환 타입은 무엇인가?",
+    choices: ["int", "size_t (unsigned, string::size_type)", "long long", "bool"],
+    answer: 1,
+    a: `size_t pos = s.find('a');   // string::size_type == size_t (unsigned)`,
+    note: `없으면 string::npos = (size_t)-1 = 18446744073709551615. int에 담으면 -1로 잘려서 p < hi 같은 비교나 p + 1 에서 조용히 터진다. size_t는 unsigned라 p >= 0 은 항상 참이라 무의미하다.`
+  },
+  {
+    tag: "find 시작 위치 지정",
+    q: "<code>string s = \"aXbXcXd\";</code> 에서 3번 위치 이후에 처음 나오는 'X'의 위치를 구하시오.",
+    a: `size_t p = s.find('X', 3);   // 3
+// find(무엇, pos): pos부터 끝까지 검색. 시작점 제한 O, 끝 제한 X`,
+    note: "임의의 [lo, hi) 구간을 한 번에 지정하는 문자열 find는 없다. 시작점은 pos로, 끝은 반환값을 hi와 비교해서 만든다."
+  },
+  {
+    tag: "find [lo,hi) 구간 제한",
+    q: "<code>string s = \"aXbXcXd\";</code> 에서 <code>[4, 6)</code> 구간 안에 'X'가 있는지 확인하시오.",
+    a: `size_t lo = 4, hi = 6;
+size_t p = s.find('X', lo);
+bool hit = (p != string::npos && p < hi);   // true (p==5)`,
+    note: "npos 먼저 체크가 필수. npos는 항상 hi보다 커서 p < hi 만 쓰면 우연히 걸러지지만 p + 1 같은 연산이 오버플로한다. 반복자로 진짜 제한하려면 std::search(s.begin()+lo, s.begin()+hi, ...) 또는 s.substr(lo, hi-lo).find('X')."
+  },
+  {
+    tag: "rfind",
+    q: "<code>string s = \"hello world hello\";</code> 에서 마지막 \"hello\"의 시작 위치를 구하시오.",
+    a: `s.rfind("hello");      // 12
+// s.rfind("hello", 5); // 0  ← pos 이하 구간에서 뒤에서부터`,
+    note: "rfind는 뒤에서 찾지만 반환은 항상 앞쪽 인덱스. pos는 rfind에서 '상한'이다."
+  },
+  {
+    tag: "find_first_of vs find",
+    q: "<code>string s = \"hello\";</code> 에서 <code>s.find_first_of(\"lo\")</code> 가 찾는 것은?",
+    choices: ["부분 문자열 \"lo\"의 위치", "'l' 또는 'o' 중 처음 나오는 위치", "\"lo\"의 마지막 위치", "'lo'가 연속으로 나오는 횟수"],
+    answer: 1,
+    a: `s.find_first_of("lo");   // 2  ('l' 하나만 찾음)
+// 문자열 "lo"를 찾으려면 그냥 s.find("lo")`,
+    note: `_of 계열(find_first_of/find_last_of/find_first_not_of/find_last_not_of)은 이름과 달리 문자 하나하나의 "집합"을 찾는다. find_first_not_of는 map/파싱할 때 자주 쓴다.`
+  },
+  {
+    tag: "모든 위치 순회",
+    q: "<code>string s = \"a.b.c.d\";</code> 에서 '.'이 나오는 모든 위치를 출력하는 반복문을 쓰시오.",
+    a: `size_t pos = 0;
+while ((pos = s.find('.', pos)) != string::npos) {
+    cout << pos << " ";   // 1 3 5
+    pos++;                // ← 없으면 무한루프
+}`,
+    note: "찾은 위치 그대로 다시 find에 넘기면 같은 자리를 계속 찾으므로 pos++로 한 칸 전진시켜야 한다."
+  },
+  {
+    tag: "find 종류 반환값",
+    q: "<code>std::find(v.begin(), v.end(), 5)</code> (algorithm) 가 값을 못 찾았을 때 반환하는 것은?",
+    choices: ["string::npos", "-1", "v.end() (iterator)", "nullptr"],
+    answer: 2,
+    a: `auto it = std::find(v.begin(), v.end(), 5);   // 없으면 v.end()
+// if (it != v.end()) { ... }`,
+    note: `함정: string::find는 size_t + npos, std::find는 iterator + end(). 두 개를 섞어 npos 대신 end()를 비교하는 실수가 잦다.`
   },
   {
     tag: "append vs push_back",
@@ -239,7 +319,7 @@ for (char c : s) n = n * 10 + (c - '0');`,
   // ===== vector =====
   {
     tag: "vector 초기화",
-    q: "크기 N, 모든 값이 0인 int vector를 선언하시오.",
+    q: "<code>int N;</code> 이 주어졌을 때, 크기 N이고 모든 값이 0인 int vector를 선언하시오.",
     a: `vector<int> v(N);     // 또는 vector<int> v(N, 0);`,
     note: "vector<int> v(N, 3)이면 3으로 채움."
   },
@@ -257,6 +337,63 @@ v.pop_back();`,
     note: "맨 뒤 조회는 v.back()."
   },
   {
+    tag: "pop_back 반환값",
+    q: "<code>v.pop_back()</code> 은 삭제한 원소를 반환하는가? 마지막 값을 쓰면서 지우려면?",
+    choices: [
+      "삭제한 값을 반환한다 — int x = v.pop_back();",
+      "void라 반환하지 않는다 — int x = v.back(); v.pop_back();",
+      "iterator를 반환한다",
+      "bool(성공 여부)을 반환한다"
+    ],
+    answer: 1,
+    a: `int last = v.back();   // 먼저 조회
+v.pop_back();           // void, 아무것도 반환 안 함`,
+    note: `pop_back()은 void. queue.pop()/stack.pop()/priority_queue.pop() 도 값을 안 돌려줘서 front/top 을 먼저 쓴다. 같은 규칙.`
+  },
+  {
+    tag: "erase 인자 (iterator)",
+    q: "<code>vector<int> v;</code> 에서 <code>v.erase(2)</code> 처럼 인덱스로 지울 수 있는가? 인덱스 2를 지우는 올바른 코드는?",
+    a: `// v.erase(2);              // ❌ 컴파일 에러 (erase는 iterator를 받음)
+v.erase(v.begin() + 2);     // ✅ 인덱스 2 삭제`,
+    note: `vector::erase 는 위치를 "iterator"로 받는다. 인덱스로 지우려면 begin() + i 로 변환. (map/set의 erase만 키로도 지울 수 있음)`
+  },
+  {
+    tag: "erase 범위",
+    q: "<code>vector<int> v = {1,2,3,4,5};</code> 에서 인덱스 1,2 두 개를 한 번에 지우시오.",
+    a: `v.erase(v.begin() + 1, v.begin() + 3);   // {1,4,5}  [first, last) 반열림`,
+    note: `범위는 [first, last) 라서 끝 위치(last)는 삭제에 포함되지 않는다. 마지막 원소 하나 삭제는 v.erase(v.end() - 1) 또는 pop_back().`
+  },
+  {
+    tag: "erase 반환 반복자",
+    q: "반복문을 돌며 조건에 맞는 원소를 erase 할 때 무효 iterator를 피하는 방법은?",
+    a: `for (auto it = v.begin(); it != v.end(); ) {
+    if (*it == 3) it = v.erase(it);   // 반환값(다음 원소)으로 갱신
+    else ++it;                        // 삭제 안 했을 때만 증가
+}`,
+    note: `erase는 지운 자리의 "다음" iterator를 반환한다. 그걸 받지 않고 ++it 하면 무효 iterator를 써서 UB. pop_back()은 void라 이 문제 없음.`
+  },
+  {
+    tag: "remove vs erase",
+    q: "<code>vector<int> v;</code> 에서 값 2를 모두 삭제하시오. (<code>remove</code>는 지우지 않는다는 점 주의)",
+    a: `v.erase(remove(v.begin(), v.end(), 2), v.end());   // erase-remove 관용구
+// C++20: std::erase(v, 2);`,
+    note: `std::remove 는 값을 뒤로 밀어내고 새 끝 iterator만 반환할 뿐 실제로 지우지 않는다. 그래서 erase(end) 와 반드시 세트로 쓴다. 조건은 remove_if.`
+  },
+  {
+    tag: "맨 앞 삭제 비용",
+    q: "vector에서 <code>v.erase(v.begin())</code> 로 맨 앞을 지우는 것의 시간복잡도와, 앞쪽 삭제가 잦을 때의 대안은?",
+    choices: [
+      "O(1) — 그냥 쓰면 된다",
+      "O(N) — deque의 pop_front()를 쓰거나 인덱스만 앞으로 옮긴다",
+      "O(logN) — 이진 탐색",
+      "O(1)amortized — push_back과 동일"
+    ],
+    answer: 1,
+    a: `v.erase(v.begin());   // O(N): 뒤 원소를 전부 한 칸씩 당김
+// 대안: deque<int> dq; dq.pop_front();   // O(1)`,
+    note: `vector는 연속 메모리라 중간/앞 삭제 시 뒤 원소를 이동시켜 O(N). 마지막 삭제(pop_back)만 O(1). 앞 삭제가 많으면 deque.`
+  },
+  {
     tag: "resize",
     q: "빈 <code>vector<int> v;</code> 를 크기 5로 늘리시오.",
     a: `v.resize(5);`,
@@ -270,13 +407,13 @@ v.pop_back();`,
   },
   {
     tag: "2D vector",
-    q: "rows×columns 크기, 0으로 채운 2차원 int vector를 선언하시오.",
+    q: "<code>int rows = 3, columns = 4;</code> 일 때, rows×columns 크기이고 0으로 채운 2차원 int vector를 선언하시오.",
     a: `vector<vector<int>> v(rows, vector<int>(columns, 0));`,
     note: "안쪽부터 중첩해서 쌓음."
   },
   {
     tag: "3D vector",
-    q: "depth×rows×columns 크기의 3차원 int vector를 선언하시오.",
+    q: "<code>int depth = 2, rows = 3, columns = 4;</code> 일 때, depth×rows×columns 크기의 3차원 int vector를 선언하시오.",
     a: `vector<vector<vector<int>>> v(
     depth, vector<vector<int>>(rows, vector<int>(columns)));`,
     note: "가장 안쪽부터 감싸나감."
@@ -307,9 +444,44 @@ int idx = it - v.begin();`,
   },
   {
     tag: "sort 사용자정의",
-    q: "<code>vector<Point> p;</code> 를 compare 함수로 정렬하시오.",
-    a: `sort(p.begin(), p.end(), compare);`,
-    note: "compare가 false면 두 원소를 교환."
+    q: "<code>struct Point { int x, y; };</code> 이고 <code>vector&lt;Point&gt; p;</code> 가 있을 때, x 오름차순(같으면 y 오름차순)이 되도록 compare 함수를 정의해 정렬하시오.",
+    a: `bool compare(const Point& a, const Point& b) {
+    if (a.x != b.x) return a.x < b.x;
+    return a.y < b.y;
+}
+
+sort(p.begin(), p.end(), compare);`,
+    note: "compare가 false면 두 원소를 교환. x끼리 같으면 y로 비교."
+  },
+  {
+    tag: "sort 반환 타입",
+    q: "<code>sort(v.begin(), v.end());</code> 의 반환값은 무엇이며, <code>v = sort(...)</code> 처럼 받을 수 있는가?",
+    choices: ["정렬된 vector를 반환한다", "void 반환 — 받을 수 없다", "첫 원소의 iterator를 반환한다", "정렬 여부 bool을 반환한다"],
+    answer: 1,
+    a: `sort(v.begin(), v.end());   // 반환값 없음
+auto it = sort(...);         // ❌ error: deduced type 'void'`,
+    note: `정렬 결과를 따로 받고 싶으면 auto sorted = v; 로 복사한 뒤 그걸 정렬한다.`
+  },
+  {
+    tag: "sort in-place",
+    q: "<code>vector<int> v = {3,1,2};</code> 를 정렬한 뒤 <code>v</code>의 내용과, 추가 배열이 만들어지는지 여부는?",
+    a: `sort(v.begin(), v.end());
+// v == {1, 2, 3}  ← 원본이 직접 바뀜 (제자리 정렬)`,
+    note: `새 배열을 할당하지 않고 원소끼리 제자리에서 swap한다. v.data() 주소도 그대로. 다만 재귀 스택 때문에 O(logN) 부가 메모리는 쓴다. std::sort는 불안정 정렬이라 같은 값의 원래 순서는 보장되지 않는다(순서 유지가 필요하면 stable_sort).`
+  },
+  {
+    tag: "sort 내부 알고리즘",
+    q: "실제 <code>std::sort</code> 가 주로 쓰는 알고리즘과 시간복잡도는?",
+    choices: ["퀵소트, 최악 O(N²)", "introsort (퀵+힙+삽입), 평균·최악 모두 O(N log N)", "머지소트, O(N log N) 안정", "버블소트, O(N²)"],
+    answer: 1,
+    a: `// introsort: 퀵소트 → 재귀 깊어지면 힙소트 → 작은 구간은 삽입정렬`,
+    note: `표준은 구현을 강제하지 않지만 실제로는 introsort라 평균·최악 모두 O(N log N)을 보장한다. 안정 정렬이 아니라는 점은 별개.`
+  },
+  {
+    tag: "sort 비교자 조건",
+    q: "sort의 비교자로 <code>[](int a, int b){ return a <= b; }</code> 를 쓰면 왜 잘못인가?",
+    a: `sort(v.begin(), v.end(), [](int a, int b){ return a < b; });  // strict: a == b면 false`,
+    note: `비교자는 strict weak ordering을 만족해야 한다. <= 는 a == b 일 때 true를 반환해 정렬이 무한루프/UB가 될 수 있다. 반드시 a < b 형태로.`
   },
   {
     tag: "count",
@@ -388,6 +560,31 @@ if (it != m.end()) cout << it->second;`,
 // for (auto& p : m) p.first / p.second`,
     note: "복사비용 줄이려면 참조(auto&)."
   },
+  {
+    tag: "map 순회 순서",
+    q: "<code>map<string,int> m;</code> 에 <code>banana, apple, cherry</code> 순서로 넣었다. <code>for (auto [k,v] : m)</code> 로 순회하면 키가 나오는 순서는?",
+    choices: ["삽입한 순서 (banana, apple, cherry)", "사전순 오름차순 (apple, banana, cherry)", "사전순 내림차순", "순서를 보장하지 않는다"],
+    answer: 1,
+    a: `// apple  banana  cherry  ← 삽입 순서와 무관
+for (auto [k, v] : m) cout << k << " ";`,
+    note: `map은 레드-블랙 트리라 항상 "비교자가 정한 순서"로 정렬된 상태를 유지한다. begin()이 가장 작은 키. 정확히는 오름차순이 아니라 비교자 순서라서 map<int,string,greater<int>> 를 쓰면 내림차순이 된다.`
+  },
+  {
+    tag: "map vs unordered_map",
+    q: "<code>unordered_map<int,int> u;</code> 를 <code>for (auto [k,v] : u)</code> 로 순회하면 어떤 순서로 나오는가?",
+    choices: ["키 오름차순", "삽입 순서", "정렬되지 않은 순서, 순서를 보장하지 않음", "해시값이 작은 순"],
+    answer: 2,
+    a: `// 순서 보장 없음 (해시 테이블 순회)
+for (const auto& [k, v] : u) cout << k << " ";`,
+    note: `정렬 순회가 필요하면 map(O(logN)), 순서가 필요 없고 속도가 중요하면 unordered_map(평균 O(1)). 불필요하게 정렬을 유지하느라 map을 쓰면 손해.`
+  },
+  {
+    tag: "map 순회 복사 비용",
+    q: "<code>map<string,int> m;</code> 을 <code>for (auto [k,v] : m)</code> 으로 순회할 때의 문제점과 개선책은?",
+    a: `for (const auto& [k, v] : m) { ... }   // 복사 없음, 읽기 전용
+// for (auto [k,v] : m)  ← 매 반복마다 키/값 복사 (string 키면 비용 큼)`,
+    note: "구조 분해 바인딩도 auto로 받으면 값 복사가 일어난다. 읽기만 하면 const auto&."
+  },
 
   // ===== queue / stack / deque =====
   {
@@ -419,13 +616,19 @@ dq.push_back(3);`,
   // ===== priority_queue / tuple =====
   {
     tag: "priority_queue",
-    q: "Compare 구조체를 비교자로 쓰는 <code>priority_queue&lt;Point&gt;</code> 를 선언하시오.",
-    a: `priority_queue<Point, vector<Point>, Compare> pq;`,
-    note: "조회는 pq.top(). <자료형, 컨테이너, 비교자> 순."
+    q: "<code>struct Point { int x, y; };</code> 를 x가 작은 것부터 꺼내는 비교자 <code>Compare</code> 구조체를 정의하고, 그걸 쓰는 최소 힙 <code>priority_queue</code> 를 선언하시오.",
+    a: `struct Compare {
+    bool operator()(const Point& a, const Point& b) {
+        return a.x > b.x;   // 크면 우선순위 낮음 → 최소 힙
+    }
+};
+
+priority_queue<Point, vector<Point>, Compare> pq;`,
+    note: "조회는 pq.top(). <자료형, 컨테이너, 비교자> 순. 기본 priority_queue는 큰 값이 먼저다."
   },
   {
     tag: "min-heap (tuple)",
-    q: "tuple<int,int,int>를 오름차순(작은 것 먼저) 꺼내는 priority_queue를 선언하시오.",
+    q: "<code>tuple&lt;int,int,int&gt;</code> 를 담고, 작은 것부터 꺼내는 priority_queue를 선언하시오.",
     a: `priority_queue<tuple<int,int,int>,
     vector<tuple<int,int,int>>,
     greater<tuple<int,int,int>>> pq;`,
@@ -447,7 +650,7 @@ dq.push_back(3);`,
   },
   {
     tag: "pair 비교",
-    q: "두 pair p1, p2를 비교해 p1이 사전순으로 더 작은지 확인하시오.",
+    q: "<code>pair&lt;int,int&gt; p1 = {1,2}, p2 = {1,3};</code> 일 때, p1이 사전순으로 더 작은지 확인하는 조건문을 쓰시오.",
     a: `if (p1 < p2) { ... }`,
     note: "first가 같으면 second로 비교. ==,<,> 등 지원."
   },
@@ -456,6 +659,14 @@ dq.push_back(3);`,
     q: "<code>vector<pair<int,int>> v;</code> 에 (7,8)을 추가하시오.",
     a: `v.push_back({7, 8});`,
     note: "make_pair(7,8)도 가능."
+  },
+  {
+    tag: "emplace_back vs push_back",
+    q: "<code>vector<pair<int,int>> v;</code> 에 대해 <code>v.emplace_back({7, 8});</code> 는 컴파일 에러다. 왜인가? 올바른 수정 3가지를 쓰시오.",
+    a: `v.emplace_back(7, 8);                 // pair(U1&&, U2&&) 로 전달
+v.push_back({7, 8});                  // initializer_list를 직접 받음
+v.emplace_back(pair<int,int>{7, 8});  // 타입 명시`,
+    note: "emplace_back(Args&&...)는 완벽 전달이라 braced-init-list {7,8}의 타입을 추론하지 못해 Args...가 빈 팩이 된다(\"expects 0 arguments\"). push_back은 {}, emplace_back은 ()가 자연스럽다. vector<vector<int>>도 마찬가지로 emplace_back({1,2})는 안 되고 emplace_back(initializer_list<int>{1,2})를 써야 한다."
   },
 
   // ===== 기타 =====
@@ -470,6 +681,76 @@ dq.push_back(3);`,
     q: "<code>queue<int> q;</code> 를 그대로 복사한 새 큐 q2를 만드시오.",
     a: `queue<int> q2 = q;`,
     note: "표준 컨테이너는 대입으로 깊은 복사됨."
+  },
+
+  // ===== 나머지 연산 =====
+  {
+    tag: "나머지 연산자",
+    q: "<code>a % b</code> 의 결과 부호는 무엇을 따르는가?",
+    choices: [
+      "항상 0 이상 (수학적 modulo)",
+      "왼쪽 피연산자(피제수)의 부호",
+      "오른쪽 피연산자(제수)의 부호",
+      "구현에 따라 다름"
+    ],
+    answer: 1,
+    a: `7 % 3  ==  1
+-7 % 3  == -1   // 왼쪽이 음수 → 결과도 음수
+7 % -3  ==  1
+-7 % -3 == -1`,
+    note: `C++에선 부호가 피제수(왼쪽)를 따른다. 파이썬의 % 와 다르다(파이썬은 -7 % 3 == 2).`
+  },
+  {
+    tag: "나머지 -7%3 값",
+    q: "C++에서 <code>-7 % 3</code> 의 값은?",
+    choices: ["2", "-1", "1", "-2"],
+    answer: 1,
+    a: `-7 % 3   // -1  (왼쪽 피연산자의 부호를 따름)`,
+    note: `수학적 modulo(2)가 아니다. 부호를 떼고 싶으면 std::abs(-7 % 3), 항상 양수로 만들려면 ((x % m) + m) % m.`
+  },
+  {
+    tag: "음수도 양수 나머지로",
+    q: "음수를 넣어도 결과가 항상 0 이상(양수 나머지)이 나오게 하는 식을 쓰시오.",
+    a: `int mod(int x, int m) { return ((x % m) + m) % m; }
+// mod(-7, 3) == 2`,
+    note: `코테에서 자주 쓰는 패턴. (x % m + m) 에서 m을 더해 음수를 양수로 올린 뒤 다시 % m 으로 범위를 맞춘다.`
+  },
+  {
+    tag: "실수 나머지 fmod",
+    q: "<code>double a = 7.5, b = 2.0;</code> 일 때 <code>a % b</code> 는 왜 안 되고, 대신 무엇을 쓰는가?",
+    a: `double r = fmod(a, b);   // 1.5
+// a % b;  // ❌ 컴파일 에러 (% 는 정수 전용)`,
+    note: `% 연산자는 정수형만. 실수는 std::fmod (또는 std::remainder, 반올림 방식이 다름).`
+  },
+  {
+    tag: "div (몫+나머지)",
+    q: "7을 3으로 나눈 몫과 나머지를 <code>div</code>로 한 번에 구하시오.",
+    a: `div_t d = div(7, 3);
+cout << d.quot << " " << d.rem;   // 2 1
+// C++11: auto [q, r] = std::div(7, 3);`,
+    note: `자료형에 따라 div_t / ldiv_t / lldiv_t. /와 %를 두 번 하는 대신 나눗셈 한 번에 몫·나머지를 모두 얻는다.`
+  },
+  {
+    tag: "홀수 판정 음수 함정",
+    q: "<code>if (n % 2 == 1)</code> 로 홀수를 판정할 때 n이 음수면 왜 틀리는가?",
+    a: `// n = -3 이면 -3 % 2 == -1 이므로 == 1 은 false
+if (n % 2 != 0) { ... }   // ✅ 음수까지 올바른 홀수 판정`,
+    note: `% 결과가 피제수 부호를 따르기 때문에 음수 홀수는 -1이 나온다. 홀수는 n % 2 != 0 으로 판정.`
+  },
+  {
+    tag: "나머지 0으로 나누기",
+    q: "<code>x % 0</code> 이나 <code>x / 0</code> 을 실행하면 어떻게 되는가?",
+    choices: ["0을 반환", "npos 반환", "정의되지 않은 동작 (크래시)", "예외 out_of_range 발생"],
+    answer: 2,
+    a: `if (b != 0) { int r = a % b; }   // 나누기 전 0 체크`,
+    note: `정수 0 나누기는 UB(undefined behavior)라 크래시. 실수 0.0 으로 나누면 inf/nan 이 나오는 것과 다르다.`
+  },
+  {
+    tag: "곱셈 오버플로",
+    q: "<code>100000 * 100000 % 7</code> 이 <code>1</code> 이 아니라 <code>3</code> 이 나오는 이유와 수정법은?",
+    a: `// 곱셈이 int 범위를 넘어 오버플로 → 잘못된 값(3)
+long long r = 100000LL * 100000 % 7;   // 1`,
+    note: `큰 수 모듈러 연산은 중간값도 long long 으로. 필요하면 (a * b) 에서 각 항을 미리 % 로 줄인다.`
   }
 ];
 
@@ -485,12 +766,19 @@ questions.forEach((item, i) => {
     <label class="know"><input type="checkbox" ${known[i] ? 'checked' : ''} onchange="setKnown(${i}, this.checked)"> 학습완료</label>
     <span class="qnum">Q${i + 1}</span><span class="qtag">${item.tag}</span>
     <div class="question">${item.q}</div>
-    <textarea placeholder="여기에 답을 적어보세요..."></textarea>
-    <button class="btn-check" onclick="toggle(${i})">정답 확인하기</button>
+    ${item.choices
+      ? `<div class="choices">${item.choices.map((c, j) =>
+          `<label class="choice" data-choice="${j}">
+             <input type="radio" name="q${i}" value="${j}"> <span>${c}</span>
+           </label>`).join('')}</div>
+         <button class="btn-check" onclick="toggle(${i})">채점하기</button>
+         <div class="verdict" id="verdict-${i}"></div>`
+      : `<textarea placeholder="여기에 답을 적어보세요..."></textarea>
+         <button class="btn-check" onclick="toggle(${i})">정답 확인하기</button>`}
     <div class="answer" id="ans-${i}">
       <div class="label">정답</div>
       <pre>${item.a.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
-      ${item.note ? `<div class="note">💡 ${item.note}</div>` : ''}
+      ${item.note ? `<div class="note">💡 ${item.note.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` : ''}
     </div>
   `;
   quiz.appendChild(card);
@@ -510,7 +798,43 @@ function updateScore() {
     `학습완료 ${n} / ${questions.length}` + (n === questions.length ? ' 🎉 완주!' : '');
 }
 function toggle(i) {
-  document.getElementById('ans-' + i).classList.toggle('show');
+  const item = questions[i];
+  const ansEl = document.getElementById('ans-' + i);
+
+  // 객관식: 채점 후 정답 표시
+  if (item.choices) {
+    const picked = document.querySelector(`input[name="q${i}"]:checked`);
+    const verdict = document.getElementById('verdict-' + i);
+
+    if (!picked) {
+      verdict.className = 'verdict bad';
+      verdict.textContent = '먼저 선택지를 고르세요.';
+      return;
+    }
+    const chosen = Number(picked.value);
+
+    // 이 카드의 선택지들만 색칠
+    const card = document.getElementById('card-' + i);
+    card.querySelectorAll('.choice').forEach(el => {
+      const j = Number(el.dataset.choice);
+      el.classList.remove('correct', 'wrong');
+      el.querySelector('.mark')?.remove();
+      const mark = document.createElement('span');
+      mark.className = 'mark';
+      if (j === item.answer) { el.classList.add('correct'); mark.textContent = '✔ 정답'; }
+      else if (j === chosen) { el.classList.add('wrong'); mark.textContent = '✘'; }
+      if (j === item.answer || j === chosen) el.appendChild(mark);
+    });
+
+    const ok = chosen === item.answer;
+    verdict.className = 'verdict ' + (ok ? 'ok' : 'bad');
+    verdict.textContent = ok ? '정답입니다! 🎉' : '틀렸습니다.';
+    ansEl.classList.add('show');
+    return;
+  }
+
+  // 주관식: 기존 동작
+  ansEl.classList.toggle('show');
 }
 function revealAll() {
   document.querySelectorAll('.answer').forEach(a => a.classList.add('show'));
