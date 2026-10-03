@@ -615,6 +615,12 @@ dq.push_back(3);`,
 
   // ===== priority_queue / tuple =====
   {
+    tag: "최소 힙 (int)",
+    q: "<code>int</code>를 담고 가장 작은 값부터 꺼내는 최소 힙 <code>priority_queue</code>를 선언하시오.",
+    a: `priority_queue<int, vector<int>, greater<int>> pq;`,
+    note: "priority_queue<자료형, 컨테이너, 비교자> 순서. 기본값 less<int>는 최대 힙이고, greater<int>를 쓰면 최소 힙이 된다. 최솟값은 pq.top()으로 조회한다."
+  },
+  {
     tag: "priority_queue",
     q: "<code>struct Point { int x, y; };</code> 를 x가 작은 것부터 꺼내는 비교자 <code>Compare</code> 구조체를 정의하고, 그걸 쓰는 최소 힙 <code>priority_queue</code> 를 선언하시오.",
     a: `struct Compare {
