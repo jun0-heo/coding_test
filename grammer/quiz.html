@@ -67,6 +67,11 @@
     padding: 7px 16px; border-radius: 6px; cursor: pointer; font-size: 13px;
   }
   .btn-check:hover { background: #1d4ed8; }
+  .btn-reset {
+    margin-top: 8px; margin-left: 6px; background: #e8eaed; color: #333; border: none;
+    padding: 7px 16px; border-radius: 6px; cursor: pointer; font-size: 13px;
+  }
+  .btn-reset:hover { background: #d8dade; }
   .answer {
     display: none; margin-top: 12px; padding: 12px 14px; background: #f0fdf4;
     border-left: 4px solid #22c55e; border-radius: 4px;
@@ -778,9 +783,11 @@ questions.forEach((item, i) => {
              <input type="radio" name="q${i}" value="${j}"> <span>${c}</span>
            </label>`).join('')}</div>
          <button class="btn-check" onclick="toggle(${i})">채점하기</button>
+         <button class="btn-reset" onclick="resetQuestion(${i})">다시 풀기</button>
          <div class="verdict" id="verdict-${i}"></div>`
       : `<textarea placeholder="여기에 답을 적어보세요..."></textarea>
-         <button class="btn-check" onclick="toggle(${i})">정답 확인하기</button>`}
+         <button class="btn-check" onclick="toggle(${i})">정답 확인하기</button>
+         <button class="btn-reset" onclick="resetQuestion(${i})">다시 풀기</button>`}
     <div class="answer" id="ans-${i}">
       <div class="label">정답</div>
       <pre>${item.a.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
@@ -847,6 +854,26 @@ function revealAll() {
 }
 function hideAll() {
   document.querySelectorAll('.answer').forEach(a => a.classList.remove('show'));
+}
+function resetQuestion(i) {
+  const card = document.getElementById('card-' + i);
+
+  const textarea = card.querySelector('textarea');
+  if (textarea) textarea.value = '';
+
+  card.querySelectorAll('input[type="radio"]').forEach(input => input.checked = false);
+  card.querySelectorAll('.choice').forEach(choice => {
+    choice.classList.remove('correct', 'wrong');
+    choice.querySelector('.mark')?.remove();
+  });
+
+  const verdict = document.getElementById('verdict-' + i);
+  if (verdict) {
+    verdict.className = 'verdict';
+    verdict.textContent = '';
+  }
+
+  document.getElementById('ans-' + i).classList.remove('show');
 }
 function resetKnown() {
   if (!confirm('체크한 진행 상황을 모두 초기화할까요?')) return;
